@@ -18,8 +18,26 @@ func main() {
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
+		"help": {
+			name:        "help",
+			description: "Displays a help message",
+			callback:    commandHelp,
+		},
+
+		"map": {
+			name:        "map",
+			description: "<add map description>",
+			callback:    commandMap,
+		},
+
+		"mapb": {
+			name:        "mapb",
+			description: "add mapb description>",
+			callback:    commandMapb,
+		},
 	}
 	scanner := bufio.NewScanner(os.Stdin)
+	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20}
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -30,10 +48,14 @@ func main() {
 
 		curr_command := cleaned_input[0]
 
-		switch curr_command {
-		case "exit":
-			Commands["exit"].callback()
-		default:
+		val, ok := Commands[curr_command]
+
+		if ok {
+			err := val.callback(&conf)
+			if err != nil {
+				fmt.Print(err)
+			}
+		} else {
 			fmt.Print("Unknown command")
 		}
 
