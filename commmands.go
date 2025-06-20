@@ -14,6 +14,7 @@ var Cache *pokecache.Cache
 type config struct {
 	Loc_Next_Off     int
 	Loc_Previous_Off int
+	Parameters       []string
 }
 
 type location_area struct {
@@ -26,6 +27,14 @@ type location_area struct {
 	} `json:"results"`
 }
 
+type loc_area_pok struct {
+	PokemonEncounters []struct {
+		Pokemon struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"pokemon"`
+	} `json:"pokemon_encounters"`
+}
 type cliCommand struct {
 	name        string
 	description string
@@ -55,14 +64,10 @@ func commandMap(conf *config) error {
 
 	url := fmt.Sprint("https://pokeapi.co/api/v2/location-area?limit=20&offset=", conf.Loc_Next_Off)
 	var data location_area
+	var unmar_data []byte
 
 	if val, ok := Cache.Get(url); ok {
-		err := json.Unmarshal(val, &data)
-
-		if err != nil {
-			return err
-		}
-
+		unmar_data = val
 	} else {
 		res, err := http.Get(url)
 
@@ -70,21 +75,22 @@ func commandMap(conf *config) error {
 			return err
 		}
 
-		cache_data, err := io.ReadAll(res.Body)
+		unmar_data, err = io.ReadAll(res.Body)
+
 		if err != nil {
 			return err
 		}
 
 		defer res.Body.Close()
 
-		err = json.Unmarshal(cache_data, &data)
+		Cache.Add(url, unmar_data)
 
-		if err != nil {
-			return err
-		}
+	}
 
-		Cache.Add(url, cache_data)
+	err := json.Unmarshal(unmar_data, &data)
 
+	if err != nil {
+		return err
 	}
 
 	for _, value := range data.Results {
@@ -97,13 +103,13 @@ func commandMap(conf *config) error {
 }
 
 func commandMapb(conf *config) error {
-	conf.Loc_Next_Off -= 20
-	conf.Loc_Previous_Off -= 20
-
 	if conf.Loc_Previous_Off == -20 {
 		fmt.Println("You're on the first page")
 		return nil
 	}
+
+	conf.Loc_Next_Off -= 20
+	conf.Loc_Previous_Off -= 20
 
 	url := fmt.Sprint("https://pokeapi.co/api/v2/location-area?limit=20&offset=", conf.Loc_Previous_Off)
 
@@ -145,4 +151,52 @@ func commandMapb(conf *config) error {
 	}
 
 	return nil
+}
+
+func commandExplore(conf *config) error {
+	if len(conf.Parameters) == 0 {
+		fmt.Print("Location Parameter not given. Give input in 'explore <location_area>' ")
+		return nil
+	}
+
+	loc_exp := conf.Parameters[0]
+
+	url := fmt.Sprint("https://pokeapi.co/api/v2/location-area/", loc_exp)
+	var data loc_area_pok
+	var unmar_data []byte
+
+	if val, ok := Cache.Get(url); ok {
+		unmar_data = val
+	} else {
+		res, err := http.Get(url)
+
+		if err != nil {
+			return err
+		}
+
+		unmar_data, err = io.ReadAll(res.Body)
+
+		if err != nil {
+			return err
+		}
+
+		defer res.Body.Close()
+
+		Cache.Add(url, unmar_data)
+
+	}
+
+	err := json.Unmarshal(unmar_data, &data)
+
+	if err != nil {
+		return err
+	}
+	fmt.Println("Exploring ", loc_exp, "...")
+	fmt.Println("Found Pokemon:")
+	for _, value := range data.PokemonEncounters {
+		fmt.Println("- ", value.Pokemon.Name)
+	}
+
+	return nil
+
 }

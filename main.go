@@ -37,10 +37,16 @@ func main() {
 			description: "add mapb description>",
 			callback:    commandMapb,
 		},
+
+		"explore": {
+			name:        "explore",
+			description: "Explore a Location Area",
+			callback:    commandExplore,
+		},
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20}
-	Cache = pokecache.NewCache(5 * time.Second)
+	Cache = pokecache.NewCache(20 * time.Second)
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -52,7 +58,9 @@ func main() {
 		curr_command := cleaned_input[0]
 
 		val, ok := Commands[curr_command]
-		fmt.Print(conf.Loc_Next_Off, " ", conf.Loc_Previous_Off, "\n")
+
+		conf.Parameters = make([]string, len(cleaned_input[1:]))
+		copy(conf.Parameters, cleaned_input[1:])
 
 		if ok {
 			err := val.callback(&conf)
@@ -62,7 +70,6 @@ func main() {
 		} else {
 			fmt.Print("Unknown command")
 		}
-		fmt.Print(conf.Loc_Next_Off, " ", conf.Loc_Previous_Off, "\n")
 
 	}
 
