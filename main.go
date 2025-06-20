@@ -43,10 +43,21 @@ func main() {
 			description: "Explore a Location Area",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch",
+			description: "Catch a Pokemon",
+			callback:    commmandCatch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a Pokemon that you have caught",
+			callback:    commandInspect,
+		},
 	}
 	scanner := bufio.NewScanner(os.Stdin)
-	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20}
+	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20, Catch_Chance: 25}
 	Cache = pokecache.NewCache(20 * time.Second)
+	Pokedex = make(map[string]Pokemon)
 
 	for {
 		fmt.Print("Pokedex > ")
