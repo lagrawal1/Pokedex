@@ -1,10 +1,12 @@
 package main
 
 import (
+	pokecache "bootdev/Pokedex/internal"
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 func cleanInput(text string) []string {
@@ -38,6 +40,7 @@ func main() {
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20}
+	Cache = pokecache.NewCache(5 * time.Second)
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -49,6 +52,7 @@ func main() {
 		curr_command := cleaned_input[0]
 
 		val, ok := Commands[curr_command]
+		fmt.Print(conf.Loc_Next_Off, " ", conf.Loc_Previous_Off, "\n")
 
 		if ok {
 			err := val.callback(&conf)
@@ -58,6 +62,7 @@ func main() {
 		} else {
 			fmt.Print("Unknown command")
 		}
+		fmt.Print(conf.Loc_Next_Off, " ", conf.Loc_Previous_Off, "\n")
 
 	}
 

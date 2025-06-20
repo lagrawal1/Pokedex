@@ -1,11 +1,15 @@
 package main
 
 import (
+	pokecache "bootdev/Pokedex/internal"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 )
+
+var Cache *pokecache.Cache
 
 type config struct {
 	Loc_Next_Off     int
@@ -37,7 +41,8 @@ func commandExit(conf *config) error {
 }
 
 func commandHelp(conf *config) error {
-	fmt.Println("Welcome to the Pokedex!\nUsage:\n")
+	fmt.Println("Welcome to the Pokedex!\nUsage:")
+	fmt.Println()
 
 	for _, value := range Commands {
 		fmt.Printf("%s: %s\n", value.name, value.description)
@@ -49,22 +54,37 @@ func commandHelp(conf *config) error {
 func commandMap(conf *config) error {
 
 	url := fmt.Sprint("https://pokeapi.co/api/v2/location-area?limit=20&offset=", conf.Loc_Next_Off)
-
-	res, err := http.Get(url)
-
-	if err != nil {
-		return err
-	}
-
-	defer res.Body.Close()
-
 	var data location_area
 
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&data)
+	if val, ok := Cache.Get(url); ok {
+		err := json.Unmarshal(val, &data)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+	} else {
+		res, err := http.Get(url)
+
+		if err != nil {
+			return err
+		}
+
+		cache_data, err := io.ReadAll(res.Body)
+		if err != nil {
+			return err
+		}
+
+		defer res.Body.Close()
+
+		err = json.Unmarshal(cache_data, &data)
+
+		if err != nil {
+			return err
+		}
+
+		Cache.Add(url, cache_data)
+
 	}
 
 	for _, value := range data.Results {
@@ -77,6 +97,8 @@ func commandMap(conf *config) error {
 }
 
 func commandMapb(conf *config) error {
+	conf.Loc_Next_Off -= 20
+	conf.Loc_Previous_Off -= 20
 
 	if conf.Loc_Previous_Off == -20 {
 		fmt.Println("You're on the first page")
@@ -85,27 +107,42 @@ func commandMapb(conf *config) error {
 
 	url := fmt.Sprint("https://pokeapi.co/api/v2/location-area?limit=20&offset=", conf.Loc_Previous_Off)
 
-	res, err := http.Get(url)
-
-	if err != nil {
-		return err
-	}
-
-	defer res.Body.Close()
-
 	var data location_area
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&data)
 
-	if err != nil {
-		return err
+	if val, ok := Cache.Get(url); ok {
+		err := json.Unmarshal(val, &data)
+
+		if err != nil {
+			return err
+		}
+
+	} else {
+		res, err := http.Get(url)
+
+		if err != nil {
+			return err
+		}
+
+		cache_data, err := io.ReadAll(res.Body)
+		if err != nil {
+			return err
+		}
+
+		defer res.Body.Close()
+
+		err = json.Unmarshal(cache_data, &data)
+
+		if err != nil {
+			return err
+		}
+
+		Cache.Add(url, cache_data)
+
 	}
 
 	for _, value := range data.Results {
 		fmt.Println(value.Name)
 	}
 
-	conf.Loc_Next_Off -= 20
-	conf.Loc_Previous_Off -= 20
 	return nil
 }
