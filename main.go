@@ -53,7 +53,13 @@ func main() {
 			description: "Inspect a Pokemon that you have caught",
 			callback:    commandInspect,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "View the names of the pokemon you caught",
+			callback:    commandPokedex,
+		},
 	}
+	Exists()
 	scanner := bufio.NewScanner(os.Stdin)
 	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20, Catch_Chance: 25}
 	Cache = pokecache.NewCache(20 * time.Second)
@@ -76,10 +82,10 @@ func main() {
 		if ok {
 			err := val.callback(&conf)
 			if err != nil {
-				fmt.Print(err)
+				fmt.Println(err)
 			}
 		} else {
-			fmt.Print("Unknown command")
+			fmt.Println("Unknown command")
 		}
 
 	}

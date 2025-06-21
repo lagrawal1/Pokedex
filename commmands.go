@@ -271,7 +271,7 @@ func commmandCatch(conf *config) error {
 	err := json.Unmarshal(unmar_data, &data)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("error decoding the response. Check if a valid pokemon is entered")
 	}
 	fmt.Print("Throwing a Pokeball at ", data.Name, "...")
 	fmt.Println()
@@ -307,6 +307,20 @@ func commandInspect(conf *config) error {
 	fmt.Println("Types:")
 	for _, val := range data.Types {
 		fmt.Println("-", val.Type.Name)
+	}
+	return nil
+
+}
+
+func commandPokedex(conf *config) error {
+	fmt.Println("Your Pokedex:")
+	if len(Pokedex) == 0 {
+		fmt.Println("You haven't caught any pokemon yet.")
+		return nil
+	}
+
+	for key := range Pokedex {
+		fmt.Println("-", key)
 	}
 	return nil
 
