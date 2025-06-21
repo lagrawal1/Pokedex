@@ -9,27 +9,26 @@ import (
 )
 
 type Profile_t struct {
-	Username string
-	Password string
+	Password []byte
 	Pokedex  map[string]Pokemon
 }
+
+var Profiles map[string]Profile_t
 
 func Exists() {
 	filename := "internal/profile.json"
 	_, err := os.Stat(filename)
+	Profiles = make(map[string]Profile_t)
 
 	if errors.Is(err, os.ErrNotExist) {
 		os.Create("internal/profile.json")
-		Pokedex = make(map[string]Pokemon)
-		Save()
 	}
-
 }
 
-func Save() error {
+func Save(username string) error {
 	filename := "internal/profile.json"
 
-	data, err := json.Marshal(Pokedex)
+	data, err := json.Marshal(Profiles)
 
 	if err != nil {
 		return err

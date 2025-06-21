@@ -26,19 +26,16 @@ func main() {
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
-
 		"map": {
 			name:        "map",
 			description: "<add map description>",
 			callback:    commandMap,
 		},
-
 		"mapb": {
 			name:        "mapb",
 			description: "add mapb description>",
 			callback:    commandMapb,
 		},
-
 		"explore": {
 			name:        "explore",
 			description: "Explore a Location Area",
@@ -59,16 +56,26 @@ func main() {
 			description: "View the names of the pokemon you caught",
 			callback:    commandPokedex,
 		},
+		"login": {
+			name:        "login",
+			description: "Login. Enter login <username> <password>",
+			callback:    commandLogin,
+		},
+		"newuser": {
+			name:        "newuser",
+			description: "Creates a new profile for a user",
+			callback:    commandNewuser,
+		},
 	}
 
 	Exists()
 
-	poke_data, err := os.ReadFile("internal/profile.json")
+	profile_data, err := os.ReadFile("internal/profile.json")
 
 	if err != nil {
 		fmt.Println(err)
 	}
-	json.Unmarshal(poke_data, &Pokedex)
+	json.Unmarshal(profile_data, &Profiles)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20, Catch_Chance: 25}
@@ -76,6 +83,7 @@ func main() {
 
 	for {
 		fmt.Print("Pokedex > ")
+
 		scanner.Scan()
 		input := scanner.Text()
 
@@ -97,7 +105,7 @@ func main() {
 			fmt.Println("Unknown command")
 		}
 
-		err = Save()
+		err = Save(conf.User)
 
 		if err != nil {
 			fmt.Println(err)

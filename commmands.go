@@ -8,6 +8,8 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var Cache *pokecache.Cache
@@ -43,6 +45,7 @@ type config struct {
 	Loc_Previous_Off int
 	Parameters       []string
 	Catch_Chance     int
+	User             string
 }
 
 type location_area struct {
@@ -324,4 +327,36 @@ func commandPokedex(conf *config) error {
 	}
 	return nil
 
+}
+
+func commandLogin(conf *config) error {
+	username := conf.Parameters[0]
+	password := conf.Parameters[1]
+
+	profile := Profiles[username]
+	if err := bcrypt.CompareHashAndPassword(profile.Password, []byte(password)); err != nil {
+		return err
+	}
+
+	Pokedex = profile.Pokedex
+	conf.User = username
+
+	fmt.Println("Logged in as", username, "now")
+
+	return nil
+
+}
+
+func commandNewuser(conf *config) error {
+	username := conf.Parameters[0]
+	password := conf.Parameters[1]
+
+	hashed, err := HashPassword(password)
+
+	if err != nil {
+		return err
+	}
+
+	Profiles[username] = Profile_t{Password: []byte(hashed), Pokedex: make(map[string]Pokemon)}
+	return nil
 }
