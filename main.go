@@ -3,6 +3,7 @@ package main
 import (
 	pokecache "bootdev/Pokedex/internal"
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -59,11 +60,19 @@ func main() {
 			callback:    commandPokedex,
 		},
 	}
+
 	Exists()
+
+	poke_data, err := os.ReadFile("internal/profile.json")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	json.Unmarshal(poke_data, &Pokedex)
+
 	scanner := bufio.NewScanner(os.Stdin)
 	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20, Catch_Chance: 25}
 	Cache = pokecache.NewCache(20 * time.Second)
-	Pokedex = make(map[string]Pokemon)
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -86,6 +95,12 @@ func main() {
 			}
 		} else {
 			fmt.Println("Unknown command")
+		}
+
+		err = Save()
+
+		if err != nil {
+			fmt.Println(err)
 		}
 
 	}
