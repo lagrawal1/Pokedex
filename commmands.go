@@ -41,11 +41,10 @@ type Pokemon struct {
 }
 
 type config struct {
-	Loc_Next_Off     int
-	Loc_Previous_Off int
-	Parameters       []string
-	Catch_Chance     int
-	User             string
+	Loc_Off      int
+	Parameters   []string
+	Catch_Chance int
+	User         string
 }
 
 type location_area struct {
@@ -93,8 +92,9 @@ func commandHelp(conf *config) error {
 }
 
 func commandMap(conf *config) error {
+	conf.Loc_Off += 20
 
-	url := fmt.Sprint("https://pokeapi.co/api/v2/location-area?limit=20&offset=", conf.Loc_Next_Off)
+	url := fmt.Sprint("https://pokeapi.co/api/v2/location-area?limit=20&offset=", conf.Loc_Off)
 	var data location_area
 	var unmar_data []byte
 
@@ -129,21 +129,18 @@ func commandMap(conf *config) error {
 		fmt.Println(value.Name)
 	}
 
-	conf.Loc_Next_Off += 20
-	conf.Loc_Previous_Off += 20
 	return nil
 }
 
 func commandMapb(conf *config) error {
-	if conf.Loc_Previous_Off == -20 {
+	if conf.Loc_Off == 0 {
 		fmt.Println("You're on the first page")
 		return nil
 	}
 
-	conf.Loc_Next_Off -= 20
-	conf.Loc_Previous_Off -= 20
+	conf.Loc_Off -= 20
 
-	url := fmt.Sprint("https://pokeapi.co/api/v2/location-area?limit=20&offset=", conf.Loc_Previous_Off)
+	url := fmt.Sprint("https://pokeapi.co/api/v2/location-area?limit=20&offset=", conf.Loc_Off)
 
 	var data location_area
 

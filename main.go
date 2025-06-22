@@ -74,7 +74,7 @@ func main() {
 	}
 
 	Exists()
-	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20, Catch_Chance: 25, User: "guest"}
+	conf := config{Catch_Chance: 25, User: "guest", Loc_Off: -20}
 
 	profile_data, err := os.ReadFile("internal/profile.json")
 
