@@ -23,6 +23,9 @@ func Exists() {
 	if errors.Is(err, os.ErrNotExist) {
 		os.Create("internal/profile.json")
 	}
+
+	commandNewuser(&config{Parameters: []string{"guest", ""}})
+
 }
 
 func Save(username string) error {

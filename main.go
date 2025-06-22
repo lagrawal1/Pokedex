@@ -66,9 +66,15 @@ func main() {
 			description: "Creates a new profile for a user",
 			callback:    commandNewuser,
 		},
+		"currentuser": {
+			name:        "currentuser",
+			description: "Prints the current username of the person logged in",
+			callback:    commandCurrentuser,
+		},
 	}
 
 	Exists()
+	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20, Catch_Chance: 25, User: "guest"}
 
 	profile_data, err := os.ReadFile("internal/profile.json")
 
@@ -78,8 +84,12 @@ func main() {
 	json.Unmarshal(profile_data, &Profiles)
 
 	scanner := bufio.NewScanner(os.Stdin)
-	conf := config{Loc_Next_Off: 0, Loc_Previous_Off: -20, Catch_Chance: 25}
+
 	Cache = pokecache.NewCache(20 * time.Second)
+
+	profile := Profiles[conf.User]
+	Pokedex = profile.Pokedex
+	fmt.Println("Logged in as", conf.User, "now")
 
 	for {
 		fmt.Print("Pokedex > ")

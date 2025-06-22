@@ -330,12 +330,31 @@ func commandPokedex(conf *config) error {
 }
 
 func commandLogin(conf *config) error {
+	var password string
 	username := conf.Parameters[0]
-	password := conf.Parameters[1]
+	if username != "guest" {
+		password = conf.Parameters[1]
+	} else {
+		password = ""
+	}
 
-	profile := Profiles[username]
-	if err := bcrypt.CompareHashAndPassword(profile.Password, []byte(password)); err != nil {
-		return err
+	profile, ok := Profiles[username]
+
+	if !ok {
+		fmt.Println("This user doesn't exist.")
+		return nil
+	}
+
+	err := bcrypt.CompareHashAndPassword(profile.Password, []byte(password))
+
+	switch err {
+	case nil:
+		break
+	case bcrypt.ErrMismatchedHashAndPassword:
+		return fmt.Errorf("incorrect password entered")
+	default:
+		return fmt.Errorf("unknown error")
+
 	}
 
 	Pokedex = profile.Pokedex
@@ -358,5 +377,10 @@ func commandNewuser(conf *config) error {
 	}
 
 	Profiles[username] = Profile_t{Password: []byte(hashed), Pokedex: make(map[string]Pokemon)}
+	return nil
+}
+
+func commandCurrentuser(conf *config) error {
+	fmt.Println("You are logged in as", conf.User)
 	return nil
 }
